@@ -1,0 +1,101 @@
+﻿<Window x:Class="WpfApp2.View.DockForm"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp2.View"
+        xmlns:model="clr-namespace:WpfApp2.Model"
+         xmlns:Utils="clr-namespace:WpfApp2"
+        xmlns:avalon="https://github.com/Dirkster99/AvalonDock"
+        mc:Ignorable="d"
+        Title="DockForm" Height="450" Width="800" WindowStyle="SingleBorderWindow" Closing="Window_Closing">
+    <Window.Resources>
+        <Utils:EnumConverter x:Key="EnumConverter"/>
+    </Window.Resources>
+    <Grid Background="#293955">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="20"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Menu Margin="0" HorizontalAlignment="Left" x:Name="menu1" VerticalAlignment="Top" Background="#293955" Foreground="White">
+            <MenuItem Header="Connect" Click="MenuItem_Click" >
+                <MenuItem Header="Connect Can" x:Name="btnConnectCan"></MenuItem>
+                <MenuItem Header="DisConnect" x:Name="disconnect"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="New Form" Click="MenuItem_Click_1"></MenuItem>
+            <MenuItem Header="保存布局" Click="MenuItem_Click_2"></MenuItem>
+        </Menu>
+        <avalon:DockingManager x:Name="dockingManager" Margin="0,0,0,0" Grid.Row="1">
+            <avalon:DockingManager.Theme>
+                <avalon:Vs2013BlueTheme/>
+            </avalon:DockingManager.Theme>
+            <avalon:LayoutRoot>
+                <avalon:LayoutRoot.LeftSide>
+                    <avalon:LayoutAnchorSide>
+                        <avalon:LayoutAnchorGroup>
+                            <avalon:LayoutAnchorable Title="Project Forms" AutoHideHeight="150" ContentId="l1">
+                                <TreeView Name="tvForms" PreviewMouseDoubleClick="TreeViewItem_MouseDoubleClick">
+                                    <Style TargetType="TreeViewItem" >
+                                        <Style.Setters>
+                                            <EventSetter Event="MouseDoubleClick" Handler="TreeViewItem_MouseDoubleClick"></EventSetter>
+                                        </Style.Setters>
+                                    </Style>
+                                    <TreeView.ItemTemplate>
+                                        <HierarchicalDataTemplate  DataType="{x:Type model:ProjectItem}"  ItemsSource="{Binding Form}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock VerticalAlignment="Center" Text="{Binding Path=Name}"/>
+                                            </StackPanel>
+                                        </HierarchicalDataTemplate>
+                                    </TreeView.ItemTemplate>
+                                </TreeView>
+                            </avalon:LayoutAnchorable>
+                        </avalon:LayoutAnchorGroup>
+                    </avalon:LayoutAnchorSide>
+                </avalon:LayoutRoot.LeftSide>
+                <avalon:LayoutRoot.BottomSide>
+                    <avalon:LayoutAnchorSide >
+                        <avalon:LayoutAnchorGroup x:Name="bottomGroup">
+                            <avalon:LayoutAnchorable Title="输出" ContentId="t1">
+                                <ListBox x:Name="lbLog"></ListBox>
+                            </avalon:LayoutAnchorable>
+                        </avalon:LayoutAnchorGroup>
+                    </avalon:LayoutAnchorSide>
+                </avalon:LayoutRoot.BottomSide>
+
+                <avalon:LayoutPanel>
+                    <avalon:LayoutDocumentPane x:Name="documentPanel">
+                        <avalon:LayoutDocument Title="mainwindows.xaml" ContentId="d1">
+                            <TextBox AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
+                        </avalon:LayoutDocument>
+                    </avalon:LayoutDocumentPane>
+                </avalon:LayoutPanel>
+            </avalon:LayoutRoot>
+        </avalon:DockingManager>
+        <StatusBar VerticalAlignment="Bottom" Height="20" Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock>Download File</TextBlock>
+            </StatusBarItem>
+            <StatusBarItem>
+                <ProgressBar Width="100" Height="18" x:Name="progressBar1">
+                    <ProgressBar.Triggers>
+                        <EventTrigger RoutedEvent="ProgressBar.Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="progressBar1"
+                                                     Storyboard.TargetProperty="Value"
+                                                     From="0"
+                                                     To="100" Duration="0:0:5"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </ProgressBar.Triggers>
+                </ProgressBar>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock>Hah</TextBlock>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

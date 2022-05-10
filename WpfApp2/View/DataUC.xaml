@@ -1,0 +1,267 @@
+﻿<UserControl x:Class="WpfApp2.View.DataUC"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:WpfApp2.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <ScrollViewer >
+        <Grid Margin="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"></RowDefinition>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Background="White" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <GroupBox Header="Set">
+                <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0" x:Name="setPanel">
+                    <StackPanel Orientation="Horizontal" Margin="0">
+                        
+                            <ComboBox materialDesign:HintAssist.Hint="Signal Name" 
+                                      Style="{StaticResource MaterialDesignFilledComboBox}"
+                                      x:Name="cbbSignals" 
+                                      DisplayMemberPath="SignalName" 
+                                      SelectedValuePath="StrValue" 
+                                      Width="154"
+                                      Margin="10,0,10,0" 
+                                      SelectionChanged="cbbSignals_SelectionChanged"></ComboBox>
+                        <TextBox 
+                            materialDesign:HintAssist.Hint="Curretn Value"
+                            x:Name="tbCurrent" Width="150" Text="{Binding ElementName=cbbSignals,Path=SelectedValue}" Margin="10,0,10,0"></TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnReduce" Click="btnSet_Click">
+                            <TextBlock Text="-"></TextBlock>
+                        </Button>
+                        <TextBox Width="100"></TextBox>
+                        <Button x:Name="btnAdd" Click="btnSet_Click">
+                            <TextBlock Text="+"></TextBlock>
+                        </Button>
+                        <!--<TextBlock Margin="20,0,0,0" Text="*add or reduce signal value" Foreground="Gray" VerticalAlignment="Center"></TextBlock>-->
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnDivid" Click="btnSet_Click">
+                            <TextBlock Text="/"></TextBlock>
+                        </Button>
+                        <TextBox Width="100"></TextBox>
+                        <Button x:Name="btnMultip" Click="btnSet_Click">
+                            <TextBlock Text=" *"></TextBlock>
+                        </Button>
+                        <!--<TextBlock Margin="20,0,0,0" Text="*Divid or Multip signal value" Foreground="Gray" VerticalAlignment="Center"></TextBlock>-->
+                    </StackPanel>
+                    <Button x:Name="btnSet" Click="btnSet_Click" Width="300">
+                        <TextBlock Text="Send"></TextBlock>
+                    </Button>
+
+                </StackPanel>
+                </GroupBox>
+                <Border Grid.Column="1" Background="#f4f4f4" CornerRadius="10" Margin="4,0,0,0">
+                <StackPanel Orientation="Vertical" x:Name="getPanel" Grid.RowSpan="2">
+                        <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16">Get</TextBlock>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock VerticalAlignment="Center"> Interval :</TextBlock>
+                            <TextBox Margin="5" Width="100" Text="{Binding IntervalTime}"></TextBox>
+                            <TextBlock VerticalAlignment="Center"> ms</TextBlock>
+                        </StackPanel>
+                        <materialDesign:Badged Badge="3">
+                            <Button x:Name="btnGet" Click="btnGet_Click">
+                                <!--<Button.Resources>
+                                <Style TargetType="Button">
+                                    <
+                                </Style>
+                            </Button.Resources>-->
+                                <TextBlock Text="Get">
+
+                                </TextBlock>
+                            </Button>
+                        </materialDesign:Badged>
+                    
+                </StackPanel>
+                </Border>
+            </Grid>
+            <StackPanel Grid.Row="1" Background="AliceBlue">
+                <TabControl>
+                    <TabItem Header="Data">
+                        <DataGrid x:Name="dataGridSignals" CanUserAddRows="False" CanUserDeleteRows="False" 
+                                  AutoGenerateColumns="False" 
+                                  ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                  Binding="{Binding MessageID}"
+                                  Header="MessageID"
+                                  ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                                  EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}" />
+                                <DataGridTextColumn
+                                  Binding="{Binding SignalName}"
+                                  Header="SignalName"
+                                  ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+                                  EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}" />
+                                <materialDesign:DataGridTextColumn
+                                  Binding="{Binding StrValue}"
+                                  Header="Value"
+                                  Width="120"
+                                  EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}">
+                                                                <DataGridTextColumn.HeaderStyle>
+                                                                    <Style
+                                      TargetType="{x:Type DataGridColumnHeader}"
+                                      BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                                                        <Setter
+                                        Property="HorizontalContentAlignment"
+                                        Value="Right" />
+                                                                        <Setter
+                                        Property="ContentTemplate">
+                                                                            <Setter.Value>
+                                                                                <DataTemplate>
+                                                                                    <TextBlock
+                                              TextWrapping="Wrap"
+                                              Text="{Binding}"
+                                              TextAlignment="Right" />
+                                                                                </DataTemplate>
+                                                                            </Setter.Value>
+                                                                        </Setter>
+                                                                    </Style>
+                                                                </DataGridTextColumn.HeaderStyle>
+                                                                <DataGridTextColumn.ElementStyle>
+                                                                    <Style
+                                      TargetType="{x:Type TextBlock}"
+                                      BasedOn="{StaticResource MaterialDesignDataGridTextColumnStyle}">
+                                                                    <Setter
+                                        Property="HorizontalAlignment"
+                                        Value="Right" />        
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </materialDesign:DataGridTextColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        
+                    </TabItem>
+                    <TabItem Header="Demo">
+                        <DataGrid
+  ItemsSource="{Binding DbcSignals}"
+  CanUserAddRows="False"
+  AutoGenerateColumns="False"
+  HeadersVisibility="All">
+                            <DataGrid.Resources>
+                                <domain:BindingProxy
+      x:Key="DataContextProxy"
+      Data="{Binding}" xmlns:domain="clr-namespace:WpfApp2.Utils" />
+                            </DataGrid.Resources>
+                            <DataGrid.Columns>
+                                <DataGridCheckBoxColumn
+      Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"
+      ElementStyle="{StaticResource MaterialDesignDataGridCheckBoxColumnStyle}"
+      EditingElementStyle="{StaticResource MaterialDesignDataGridCheckBoxColumnEditingStyle}">
+                                    <DataGridCheckBoxColumn.Header>
+                                        <Border
+          Background="Transparent">
+                                            <CheckBox
+            IsChecked="{Binding Data.IsAllItems1Selected, Source={StaticResource DataContextProxy}}" />
+                                        </Border>
+                                    </DataGridCheckBoxColumn.Header>
+                                    <DataGridCheckBoxColumn.HeaderStyle>
+                                        <Style
+          TargetType="{x:Type DataGridColumnHeader}"
+          BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                            <Setter
+            Property="HorizontalContentAlignment"
+            Value="Center" />
+                                        </Style>
+                                    </DataGridCheckBoxColumn.HeaderStyle>
+                                </DataGridCheckBoxColumn>
+                                <DataGridTextColumn
+      Binding="{Binding Code}"
+      Header="Code"
+      ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+      EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}" />
+                                <!-- if you want to use the pop up style (MaterialDesignDataGridTextColumnPopupEditingStyle), you must use MaterialDataGridTextColumn -->
+                                <materialDesign:DataGridTextColumn
+      Header="Name"
+      ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+      EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}">
+                                    <materialDesign:DataGridTextColumn.Binding>
+                                        <Binding
+          Path="Name">
+                                            <Binding.ValidationRules>
+                                                <!--<domain:NotEmptyValidationRule xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </materialDesign:DataGridTextColumn.Binding>
+                                </materialDesign:DataGridTextColumn>
+                                <!-- set a max length to get an indicator in the editor -->
+                                <DataGridTextColumn
+      Header="Description"
+      ElementStyle="{StaticResource MaterialDesignDataGridTextColumnStyle}"
+      EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}">
+                                    <DataGridTextColumn.Binding>
+                                        <Binding
+          Path="Description">
+                                            <Binding.ValidationRules>
+                                                <!--<domain:NotEmptyValidationRule xmlns:domain="clr-namespace:MaterialDesignDemo.Domain" />-->
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </DataGridTextColumn.Binding>
+                                </DataGridTextColumn>
+                                <materialDesign:DataGridTextColumn
+      Binding="{Binding Numeric}"
+      Header="Number with long header"
+      Width="120"
+      EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnPopupEditingStyle}">
+                                    <DataGridTextColumn.HeaderStyle>
+                                        <Style
+          TargetType="{x:Type DataGridColumnHeader}"
+          BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                            <Setter
+            Property="HorizontalContentAlignment"
+            Value="Right" />
+                                            <Setter
+            Property="ContentTemplate">
+                                                <Setter.Value>
+                                                    <DataTemplate>
+                                                        <TextBlock
+                  TextWrapping="Wrap"
+                  Text="{Binding}"
+                  TextAlignment="Right" />
+                                                    </DataTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </DataGridTextColumn.HeaderStyle>
+                                    <DataGridTextColumn.ElementStyle>
+                                        <Style
+          TargetType="{x:Type TextBlock}"
+          BasedOn="{StaticResource MaterialDesignDataGridTextColumnStyle}">
+                                            <Setter
+            Property="HorizontalAlignment"
+            Value="Right" />
+                                        </Style>
+                                    </DataGridTextColumn.ElementStyle>
+                                </materialDesign:DataGridTextColumn>
+                                <!-- use custom combo box column to get better combos. Use ItemsSourceBinding as your binding template to be applied to each combo -->
+                                <materialDesign:DataGridComboBoxColumn
+      Header="Food with long header"
+      IsEditable="True"
+      Width="100"
+      SelectedValueBinding="{Binding Food}"
+      ItemsSourceBinding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}, Path=DataContext.Foods}">
+                                    <!--Setting the editing element style allows access to all of the combo box's properties
+                      <materialDesign:MaterialDataGridComboBoxColumn.EditingElementStyle>
+                          <Style TargetType="ComboBox" BasedOn="{StaticResource {ComponentResourceKey TypeInTargetAssembly={x:Type ComboBox}, ResourceId=MaterialDataGridComboBoxColumnEditingStyle}}" >
+                              <Setter Property="IsEditable" Value="True" />
+                          </Style>
+                      </materialDesign:MaterialDataGridComboBoxColumn.EditingElementStyle>
+                      -->
+                                </materialDesign:DataGridComboBoxColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </TabItem>
+                </TabControl>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+
+</UserControl>

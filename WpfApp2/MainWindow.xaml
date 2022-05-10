@@ -1,0 +1,219 @@
+﻿<Window x:Class="WpfApp2.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:model="clr-namespace:WpfApp2.Model"
+        xmlns:Utils="clr-namespace:WpfApp2"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Login" Height="450" Width="700"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        FontFamily="Segoe UI Emoji">
+    <Window.Resources>
+        <Utils:EnumConverter x:Key="EnumConverter"/>
+    </Window.Resources>
+    <Grid Background="#252526">
+        <!--<Rectangle Height="400" HorizontalAlignment="Left" Width="350" VerticalAlignment="Center">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF2281D1"/>
+                    <GradientStop Color="#ff34268a" Offset="1"/>
+                    <GradientStop Color="#ff33288b" Offset="0.546"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>-->
+        <TreeView Name="tvProperties" 
+                  Width="383"
+                  Padding="0" Margin="10,66,0,25" BorderThickness="1"
+                  HorizontalAlignment="Left"
+                  Foreground="White"
+                  FontSize="20"
+                  IsTextSearchEnabled="True"
+                  SelectedItemChanged="tvProperties_SelectedItemChanged" Style="{DynamicResource MaterialDesignTreeView}">
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type model:ProjectItem}" ItemsSource="{Binding Form}">
+                    <StackPanel Orientation="Horizontal" Cursor="Hand">
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Name}"/>
+                        <StackPanel.ToolTip>
+                            <StackPanel>
+                                <TextBlock FontWeight="Bold" Text="Open Project" Margin="0,0,0,5"/>
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Path=Name,StringFormat='Project Name: \{0\}'}" TextWrapping="Wrap" MaxWidth="200"/>
+                                <TextBlock Text="{Binding DeviceType,
+                                    StringFormat='Device Type: \{0\}',
+                                    Converter={StaticResource EnumConverter},
+                                    ConverterParameter={x:Type Utils:DeviceType}}"/>
+                                <Border BorderBrush="Silver" BorderThickness="0,1,0,0" Margin="0,8"/>
+                            </StackPanel>
+                        </StackPanel.ToolTip>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+                <DataTemplate DataType="{x:Type model:FormItem}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Name}"/>
+                        <StackPanel.ToolTip>
+                            <StackPanel>
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Path=Name}" TextWrapping="Wrap" MaxWidth="200"/>
+                                <TextBlock Text="{Binding FormType,
+                                    StringFormat='Device Type: \{0\}',
+                                    Converter={StaticResource EnumConverter},
+                                    ConverterParameter={x:Type Utils:FormType}}"/>
+                                
+
+                            </StackPanel>
+                        </StackPanel.ToolTip>
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.Resources>
+            <!--<TreeView.ItemTemplate>
+                <HierarchicalDataTemplate  DataType="{x:Type local:ProjectItem}"  ItemsSource="{Binding Form}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Type}" Margin="0,0,0,0"/>
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=Name}"/>
+                        <TextBlock VerticalAlignment="Center" Text="{Binding Path=DeviceIndex}" Margin="0,0,0,0"/>
+                        <StackPanel.ToolTip>
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Path=Description}" TextWrapping="Wrap" MaxWidth="200"/>
+                        </StackPanel.ToolTip>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>-->
+        </TreeView>
+        <!--<Rectangle Height="400" Width="350"
+                   VerticalAlignment="Center" HorizontalAlignment="Right">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF2281D1"/>
+                    <GradientStop Color="#ff34268a" Offset="1"/>
+                    <GradientStop Color="#ff33288b" Offset="0.546"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>-->
+        <StackPanel Height="256" VerticalAlignment="Center" HorizontalAlignment="Left" Width="302" Margin="398,0,0,0">
+            <Button x:Name="btnNewProject" Height="40" Margin="10,10,10,5" Background="#333337"
+                    BorderBrush="Gray" Click="btnNewProject_Click">
+                <TextBlock Text="New Project" Foreground="White" FontSize="24" HorizontalAlignment="Left"/>
+            </Button>
+            <Button x:Name="btnDBC" Height="40"  Margin="10,5">
+                <TextBlock Text="DBC File Parse" Foreground="White" FontSize="24" HorizontalAlignment="Left"/>
+            </Button>
+            <Button x:Name="btnHistory" Height="40"  Margin="10,5">
+                <TextBlock Text="Curve" Foreground="White" FontSize="24" HorizontalAlignment="Left"/>
+            </Button>
+            <Button x:Name="btnDockTest" Height="40"  Margin="10,5" Click="btnDockTest_Click">
+                <TextBlock Text="Dock Form" Foreground="White" FontSize="24" HorizontalAlignment="Left"/>
+            </Button>
+        </StackPanel>
+        <TextBlock HorizontalAlignment="Left" Margin="23,10,0,0" 
+                   FontSize="30" Foreground="White"
+                   Text="Open Current Project" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Background="{x:Null}" BorderBrush="{x:Null}" Click="Button_Click">
+            <materialDesign:PackIcon Kind="Close"/>
+        </Button>
+        <TextBlock Text="Version:" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="23,0,20,9" Foreground="Gray" Cursor="Hand"/>
+        
+        <!--<Grid Height="60" VerticalAlignment="Top" Background="#ff9c27b0">
+            <TextBlock Text="123" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" />
+            <Button HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Click="Close_Click">
+                <materialDesign:PackIcon Kind="Close"/>
+            </Button>
+        </Grid>
+        <Grid Margin="0 60 0 0">
+            <TabControl>
+            <TabItem Header="首页">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Run Text="Welcome my blog"/>
+                        <Hyperlink Click="ShowWeb_Click" Tag="www.baidu.com">www.baidu.com</Hyperlink>
+                    </TextBlock>
+                    <WebBrowser Grid.Row="1" Margin="5" Source="https:\\www.baidu.com"/>
+                    </Grid>
+            </TabItem>
+            <TabItem Header="设计">
+                
+            </TabItem>
+            </TabControl>
+        </Grid>-->
+        <!--<Rectangle Height="200" VerticalAlignment="Top">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FF2281D1"/>
+                    <GradientStop Color="#ff34268a" Offset="1"/>
+                    <GradientStop Color="#ff33288b" Offset="0.546"/>
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <Rectangle Width="280" Height="240" VerticalAlignment="Bottom" Margin="0,80" RadiusY="10" RadiusX="10" Fill="White">
+            <Rectangle.Effect>
+                <DropShadowEffect BlurRadius="15" Direction="0" RenderingBias="Quality" ShadowDepth="1" Color="#ffbbbbbb"/>
+            </Rectangle.Effect>
+        </Rectangle>
+        <Grid VerticalAlignment="Bottom" Margin="35,80" Height="240">
+            <Label Content="登录" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="5" Foreground="Gray" FontSize="18"/>
+            <StackPanel VerticalAlignment="Center" Margin="15">
+                <TextBox Margin="0,10" materialDesign:HintAssist.Hint="账号" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontFamily="Champagne &amp; Limousines" FontSize="18"/>
+                <PasswordBox Margin="0,10" materialDesign:HintAssist.Hint="密码" Style="{StaticResource MaterialDesignFloatingHintPasswordBox}" FontFamily="Champagne &amp; Limousines" FontSize="18"/>
+            </StackPanel>
+
+        </Grid>
+        <Button Width="150" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,65" Content="Login"/>
+        <TextBlock Text="注册账号" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="30" Foreground="Gray" Cursor="Hand"/>
+        <TextBlock Text="忘记密码?" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="30" Foreground="Gray" Cursor="Hand"/>
+        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Background="{x:Null}" BorderBrush="{x:Null}" Click="Button_Click">
+            <materialDesign:PackIcon Kind="Close"/>
+        </Button>-->
+        <!--<TabControl Width="300" Background="White" Margin="0">
+            <TabItem Header="Tab 1">
+                <TextBlock Text="123"></TextBlock>
+            </TabItem>
+            <TabItem Header="tab 2">
+                
+            </TabItem>
+        </TabControl>
+        <TreeView Name="tvProperties" Width="250" Padding="0" Margin="10" BorderThickness="1" Background="Gray">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate  ItemsSource="{Binding Path=Children}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image VerticalAlignment="Center" Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,2,2"/>
+                        <TextBlock VerticalAlignment="Center" Text="{Binding DisplayName}"/>
+                        <Image VerticalAlignment="Center" Source="{Binding EditIcon}" Margin="2,0,0,0"/>
+                        <StackPanel.ToolTip>
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Name}" TextWrapping="Wrap" MaxWidth="200"/>
+                        </StackPanel.ToolTip>
+                        <StackPanel.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Name="MenuItem1" Header="Open"/>
+                                <MenuItem Name="menuiten2" Header="Edit"/>
+                            </ContextMenu>
+                        </StackPanel.ContextMenu>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>-->
+    </Grid>
+    <!--<DockPanel>
+        <Button Content="Top" DockPanel.Dock="Top"/>
+        <Button Content="Right" DockPanel.Dock="Right"></Button>
+        <Button Content="左停靠" DockPanel.Dock="Left" MinWidth="80"></Button>
+        <Button Content="Bottom" DockPanel.Dock="Bottom"/>
+    </DockPanel>-->
+    <!--<StackPanel RenderTransformOrigin="0.496,0.503">
+        <Button Content="btn1" Margin="5" Height="40" ToolTip="btn1"/>
+        <Button Content="Button2"  HorizontalAlignment="Left"/>
+        <Button Content="Button3"  HorizontalAlignment="Right" BorderBrush="#FFDC1D1D" BorderThickness="6,1,1,1" Background="#FFBFACAC"/>
+        <Label Content="123" Target="{Binding ElementName=tboxA}"/>
+        <TextBox x:Name="tboxA"></TextBox>
+        <Expander Header="Expander 1">
+            <Grid>
+                <TextBlock Text="Expander is a HeaderedContentControl" VerticalAlignment="Center" FontSize="20"/>
+            </Grid>
+        </Expander>
+    </StackPanel>-->
+</Window>
