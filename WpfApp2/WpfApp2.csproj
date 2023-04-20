@@ -12,11 +12,30 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="MainWindowL.xaml.cs" />
+    <Compile Remove="Utils\ControlCanHelper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="MainWindowL.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Dirkster.AvalonDock" Version="4.70.1" />
     <PackageReference Include="Dirkster.AvalonDock.Themes.VS2013" Version="4.70.1" />
     <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
-    <PackageReference Include="MaterialDesignThemes" Version="4.3.0" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.5.0" />
+    <PackageReference Include="microsoft.xaml.behaviors.wpf" Version="1.1.39" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="OxyPlot.Wpf" Version="2.1.0" />
     <PackageReference Include="Prism.Core" Version="8.1.97" />
@@ -25,6 +44,19 @@
   <ItemGroup>
     <ProjectReference Include="..\CanControl\CanControl.csproj" />
     <ProjectReference Include="..\ProtocolLib\ProtocolLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="View\BaseDataUC.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="View\BaseDataUC.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>

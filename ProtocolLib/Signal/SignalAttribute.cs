@@ -17,6 +17,16 @@ namespace ProtocolLib.Signal
         AllowMultiple = true)]
     public class SignalAttribute : System.Attribute
     {
+        bool needUI = true;
+        public bool NeedUI { get => needUI; set => needUI = value; }
+        /// <summary>
+        /// 是否需要显示UI
+        /// </summary>
+        /// <param name="needUI"></param>
+        public SignalAttribute(bool needUI)
+        {
+            NeedUI = needUI;
+        }
         private string description;
         /// <summary>
         /// textBox
@@ -41,9 +51,26 @@ namespace ProtocolLib.Signal
             this.max = max;
         }
 
+        /// <summary>
+        /// Bool类型
+        /// </summary>
+        /// <param name="description"></param>
+        /// <param name="trueStr">true时的显示</param>
+        /// <param name="falseStr">false时的显示</param>
+        public SignalAttribute(string description, string trueStr, string falseStr, bool needUI = true) : this(needUI)
+        {
+            this.description = description;
+            this.type = "bool";
+            this.trueStr = trueStr;
+            this.falseStr = falseStr;
+        }
+
         private int[] enumKey;
         private string[] enumString;
-
+        private string trueStr;
+        private string falseStr;
+        public string TrueStr { get => trueStr; }
+        public string FalseStr { get => falseStr; }
         /// <summary>
         /// 枚举类型
         /// </summary>

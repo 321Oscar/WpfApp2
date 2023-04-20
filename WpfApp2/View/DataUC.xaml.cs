@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +24,7 @@ namespace WpfApp2.View
     /// <summary>
     /// DataUC.xaml 的交互逻辑
     /// </summary>
-    public partial class DataUC : UserControl
+    public partial class DataUC : UserControl, INotifyPropertyChanged
     {
         /// <summary>
         /// 数据窗口：Get/Set
@@ -38,51 +40,68 @@ namespace WpfApp2.View
             this.formItem = formItem;
             //load Signals in DataGird
             DbcSignals = new ObservableCollection<DBCSignal>(formItem.Singals.Signal);
-            this.dataGridSignals.ItemsSource = DbcSignals;
 
-            isReadOnly = formItem.FormType == 1;
+            ISReadOnly = formItem.FormType == 1;
             cbbSignals.ItemsSource = DbcSignals;
             this.DataContext = this;
-        }
 
+            gdData.Columns[2].IsReadOnly = !ISReadOnly;
+        }
+        #region 属性
+
+        
         private ProjectItem OwnerProject;
         private FormItem formItem;
         public ObservableCollection<DBCSignal> DbcSignals { get; }
         private bool isReadOnly;
-        private bool isGetData = false;
-        public bool ISReadOnly => isReadOnly;
-        public int IntervalTime { get; set; } = 10;
+        private int interval = 10;
+        private bool isGetdata;
+        public bool ISReadOnly { get => isReadOnly; private set => isReadOnly = value; }
+        public int IntervalTime { get => interval; set { interval = value; OnPropertyChanged(nameof(IntervalTime)); } }
         public bool IsGetData
         {
-            get => isGetData;
-            set => isGetData = value;
+            get => isGetdata;
+            set { isGetdata = value; OnPropertyChanged(nameof(IsGetData)); }
         }
-
-        private void cbbSignals_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        public bool? IsAllSignalsSelected
         {
-            if (cbbSignals.SelectedIndex != -1)
+            get
             {
-                DBCSignal selectSignal = cbbSignals.SelectedItem as DBCSignal;
-
-                ///不能绑定数据，rollingcounter 模式下改变数据会跳变
-                ///9->10 先发1，再发10
-                //if (formItem.FormType == (int)FormType.Set)
-                //{
-                //    var threadSafeModel = new SynchronizedNotifyPropertyChanged<DBCSignal>(selectSignal, this);
-                //    tbCurrent.da
-                //    tbCurrent.DataBindings.Add("Text", threadSafeModel, "StrValue", false, DataSourceUpdateMode.OnPropertyChanged, "0");
-                //}
-
-                //tbCurrent.Text = selectSignal.StrValue;
-
+                var selected = DbcSignals.Select(x => x.IsSelected).Distinct().ToList();
+                return selected.Count == 1 ? selected.Single() : null;
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    SelectALL(value.Value, DbcSignals);
+                    OnPropertyChanged(nameof(IsAllSignalsSelected));
+                }
             }
         }
 
-        private void btnSet_Click(object sender, RoutedEventArgs e)
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+           => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        #endregion
+
+        #region -- Private
+        private void SelectALL(bool select, IEnumerable<DBCSignal> signals)
         {
-            //send frame
+            foreach (var item in signals)
+            {
+                item.IsSelected = select;
+            }
         }
 
+        #endregion
+
+        #region -- Get --
+        /// <summary>
+        /// Auto Get Start/Stop
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnGet_Click(object sender, RoutedEventArgs e)
         {
             if (!IsGetData)
@@ -99,16 +118,53 @@ namespace WpfApp2.View
         /// 生成测试数据随机数
         /// </summary>
         private readonly Random r = new Random();
+
+
         private void AutoGetData()
         {
             while (IsGetData)
             {
                 foreach (var signal in DbcSignals)
                 {
-                    signal.StrValue = r.Next(0, 100).ToString();
+                    if (signal.IsSelected)
+                        signal.DValue = r.Next(0, 100) * 1.0d;
                 }
-                Thread.Sleep(10);
+                Thread.Sleep(IntervalTime);
             }
+        }
+        #endregion
+
+        #region -- Set --
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnSet_Click(object sender, RoutedEventArgs e)
+        {
+            //send frame
+        }
+        #endregion
+        private void cbbSignals_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cbbSignals.SelectedIndex != -1)
+            {
+                DBCSignal selectSignal = cbbSignals.SelectedItem as DBCSignal;
+
+                Binding binding = new()
+                {
+                    Source = selectSignal,
+                    Path = new PropertyPath(nameof(selectSignal.DValue)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                BindingOperations.SetBinding(tbSelectedValue, TextBox.TextProperty, binding);
+            }
+        }
+
+        private void btnSendRolling_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

@@ -13,5 +13,11 @@ namespace WpfApp2
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            //Textbox 绑定数据后 输入小数
+            FrameworkCompatibilityPreferences.KeepTextBoxDisplaySynchronizedWithTextProperty = false;
+            base.OnStartup(e);
+        }
     }
 }

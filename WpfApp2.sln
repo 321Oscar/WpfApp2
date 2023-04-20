@@ -5,9 +5,14 @@ VisualStudioVersion = 16.0.32002.261
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfApp2", "WpfApp2\WpfApp2.csproj", "{946D687F-028E-4DA3-B79C-4A7E5DED89CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolLib", "ProtocolLib\ProtocolLib.csproj", "{9B472BF2-5C11-4900-AB94-DC4E60A273A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtocolLib", "ProtocolLib\ProtocolLib.csproj", "{9B472BF2-5C11-4900-AB94-DC4E60A273A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CanControl", "CanControl\CanControl.csproj", "{F656F913-BEEF-4CBB-A6E3-18E306001FE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CanControl", "CanControl\CanControl.csproj", "{F656F913-BEEF-4CBB-A6E3-18E306001FE6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F79A0CEC-475B-44A2-BD10-565C15E19F35}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

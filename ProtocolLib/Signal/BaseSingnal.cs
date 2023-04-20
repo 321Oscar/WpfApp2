@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,6 +19,30 @@ namespace ProtocolLib.Signal
         private string comment;
         private double minimum;
         private double max;
+        private bool isSelected;
+        private double dValue;
+        /// <summary>
+        /// 是否选中
+        /// </summary>
+        public bool IsSelected
+        {
+            get => isSelected;
+            set => SetProperty(ref isSelected, value);
+            //{
+            //    if (value != isSelected)
+            //    {
+            //        isSelected = value;
+            //        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+            //    }
+            //}
+        }
+
+        public double DValue
+        {
+            get => dValue;
+            set => SetProperty(ref dValue, value);
+        }
+
         /// <summary>
         /// 信号名称
         /// </summary>
@@ -28,13 +53,12 @@ namespace ProtocolLib.Signal
         public double Maximum { get => max; set => max = value; }
         public string StrValue
         {
-            get => strValue;
+            get => dValue.ToString();
             set
             {
-                if (value != strValue)
+                if (value != dValue.ToString() && double.TryParse(value, out dValue))
                 {
-                    strValue = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("StrValue"));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StrValue)));
                 }
             }
         }
@@ -49,6 +73,35 @@ namespace ProtocolLib.Signal
         public int ByteOrder { get => byteOrder; set => byteOrder = value; }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Sets property if it does not equal existing value. Notifies listeners if change occurs.
+        /// </summary>
+        /// <typeparam name="T">Type of property.</typeparam>
+        /// <param name="member">The property's backing field.</param>
+        /// <param name="value">The new value.</param>
+        /// <param name="propertyName">Name of the property used to notify listeners.  This
+        /// value is optional and can be provided automatically when invoked from compilers
+        /// that support <see cref="CallerMemberNameAttribute"/>.</param>
+        protected virtual bool SetProperty<T>(ref T member, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(member, value))
+            {
+                return false;
+            }
+
+            member = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
+        /// <summary>
+        /// Notifies listeners that a property value has changed.
+        /// </summary>
+        /// <param name="propertyName">Name of the property, used to notify listeners.</param>
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
         #region 比较
         public int CompareTo(BaseSignal other)
         {
@@ -71,5 +124,9 @@ namespace ProtocolLib.Signal
         }
         #endregion
 
+        public override string ToString()
+        {
+            return $"{SignalName}:{DValue:f2}";
+        }
     }
 }

@@ -24,7 +24,12 @@ namespace ProtocolLib.Protocols.DBC
                 var protocols = protocolName.Split(';');
                 for (int i = 0; i < protocols.Length; i++)
                 {
-                    foreach (var item in ProtocolFile(protocols[i]))
+                    var signals = ProtocolFile(protocols[i]);
+                    if (signals == null || signals.Count == 0)
+                    {
+                        continue;
+                    }
+                    foreach (var item in signals)
                     {
                         if (item is DBCSignal signal)
                         {
@@ -162,7 +167,7 @@ namespace ProtocolLib.Protocols.DBC
                         }
 
                         double tmp_value = (double)((double)tmp * (double)signal.Factor + signal.Offset);
-                        signal.StrValue = tmp_value.ToString();
+                        signal.DValue = tmp_value;
                         yield return signal;
                     }
                 }
@@ -223,12 +228,12 @@ namespace ProtocolLib.Protocols.DBC
             return singals;
         }
 
-        public override string Single(CANRecieveFrame[] can_msg, DBCSignal signalItem)
+        public override string Single(CANRecieveFrame[] can_msg, BaseSignal signalItem)
         {
             throw new NotImplementedException();
         }
 
-        public override CANSendFrame[] BuildFrames(Dictionary<DBCSignal, string> signalValue)
+        public override CANSendFrame[] BuildFrames(Dictionary<BaseSignal, string> signalValue)
         {
             List<CANSendFrame> cAN_Msg_BytesList = new List<CANSendFrame>();
 
@@ -366,9 +371,55 @@ namespace ProtocolLib.Protocols.DBC
             return cAN_Msg_BytesList.ToArray();
         }
 
-        public override CANSendFrame BuildFrame(DBCSignal signal, string value)
+        public override CANSendFrame BuildFrame(BaseSignal signal, string value)
         {
             throw new NotImplementedException();
+        }
+
+        public override void Multip(CANRecieveFrame[] can_msg, IEnumerable<BaseSignal> singals)
+        {
+            foreach (var baseSignal in singals)
+            {
+                if (baseSignal is not DBCSignal signal || !baseSignal.IsSelected)
+                    continue;
+                var canThisID = can_msg.Where(x => x.cid == signal.MsgIDInt);
+                if (canThisID != null && canThisID.Any())
+                {
+                    foreach (var item in canThisID)
+                    {
+                        int len_rem1 = (int)(8 - (signal.StartBit % 8));
+                        int byte_start = (int)(signal.StartBit / 8);
+                        int len_rem2 = (int)((signal.StartBit + signal.Length) % 8);
+                        int byte_end = (int)((signal.StartBit + signal.Length) / 8);
+                        long tmp = 0;
+                        if ((byte_start + 1) <= byte_end)
+                        {
+                            for (int k = byte_start + 1; k < byte_end; k++)
+                            {
+                                tmp = tmp * 256;
+                                tmp += item.b[k];
+                            }
+                            tmp = tmp * (long)Math.Pow(2, len_rem1) + (long)(item.b[byte_start] >> (8 - len_rem1));
+
+                            long tmp2 = 0;
+                            if (byte_end >= 8)
+                                tmp2 = 0;
+                            else
+                                tmp2 = item.b[byte_end] % (long)Math.Pow(2, len_rem2);
+                            tmp2 = tmp2 * (long)Math.Pow(2, (signal.Length - len_rem2));
+
+                            tmp = tmp + tmp2;
+                        }
+                        else
+                        {
+                            tmp = (item.b[byte_start] % (int)Math.Pow(2, len_rem2)) >> (8 - len_rem1);
+                        }
+
+                        double tmp_value = (double)((double)tmp * (double)signal.Factor + signal.Offset);
+                        signal.DValue = tmp_value;
+                    }
+                }
+            }
         }
 
         #endregion

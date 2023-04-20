@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using WpfApp2.Model;
+using WpfApp2.Utils;
 using WpfApp2.View;
 
 namespace WpfApp2
@@ -24,15 +25,17 @@ namespace WpfApp2
         public MainWindow()
         {
             InitializeComponent();
-            ShowTreeView();
+            this.DataContext = new MainWindowViewModel();
+            //ShowTreeView();
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            DragMove();
+            if (Mouse.LeftButton == MouseButtonState.Pressed)
+                DragMove();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Button_CloseWd_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
@@ -44,31 +47,11 @@ namespace WpfApp2
             //DBCSinal a = (DBCSinal)r.project[0].Form[0].Singals.Signal[0];
         }
 
-        private void MenuItem1_Click(object sender, RoutedEventArgs e)
-        {
-           
-        }
-
-        private void MenuItem1_PreviewMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            TreeViewItem treeViewItem = sender as TreeViewItem;
-            MessageBox.Show(treeViewItem.Header.ToString());
-        }
-
-        private void Close_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
-        private void ShowWeb_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void btnNewProject_Click(object sender, RoutedEventArgs e)
         {
-            AddProjectWindow apw = new AddProjectWindow();
-            apw.Show();
+            ((MainWindowViewModel)DataContext).AddProject();
+            //AddProjectWindow apw = new AddProjectWindow();
+            //apw.ShowDialog();
         }
 
         private void tvProperties_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)

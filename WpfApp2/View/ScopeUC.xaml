@@ -5,10 +5,117 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WpfApp2.View"
              xmlns:oxyplot="http://oxyplot.org/wpf"
+              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:utils="clr-namespace:WpfApp2.Utils"
+              xmlns:scope="clr-namespace:WpfApp2.UserControlD"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <oxyplot:PlotView Foreground="Black" Margin="5,0,0,0" Background="Transparent" Model="{Binding ChartModel}"/>
-
+    <Grid Background="White">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ScrollViewer>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.Resources>
+                    <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignFilledTextBox}"/>
+                </Grid.Resources>
+            <GroupBox Header="Get Controls">
+                <StackPanel Orientation="Vertical" Grid.Row="0">
+                    <TextBox materialDesign:HintAssist.Hint="MaxCount" Text="{Binding MaxPointCount,UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsGetdata}"/>
+                    <TextBox x:Name="tbInterval" 
+                             materialDesign:HintAssist.Hint="Interval/(ms)"
+                             MinWidth="50" 
+                             Text="{Binding Interval,UpdateSourceTrigger=PropertyChanged}" 
+                             IsReadOnly="{Binding IsGetdata}"/>
+                    <Button x:Name="btnGetData" Click="btnGetData_Click">
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Text" Value="Start"/>
+                                    <Setter Property="Foreground" Value="Red"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsGetdata}" Value="True">
+                                            <Setter Property="Text" Value="Stop!"/>
+                                            <Setter Property="Foreground" Value="Green"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Button>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Grid.Row="1" Header="Signals">
+                    <GroupBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="更改信号" x:Name="btnChangeSignals" Click="btnChangeSignals_Click"/>
+                        </ContextMenu>
+                    </GroupBox.ContextMenu>
+            <!-- and here's another -->
+                <ItemsControl
+                     ItemsSource="{Binding ScopeSignals,UpdateSourceTrigger=PropertyChanged}"
+                        Grid.IsSharedSizeScope="True" >
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate
+                            DataType="{x:Type utils:ScopeSignal}">
+                                
+                            <Border
+                             x:Name="Border"
+                             Padding="8"
+                             BorderThickness="0 0 0 1"
+                             BorderBrush="White">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition
+                                            SharedSizeGroup="Checkerz" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <ToggleButton
+                                        VerticalAlignment="Center"
+                                        IsChecked="{Binding IsSelected}"
+                                        Style="{StaticResource MaterialDesignActionLightToggleButton}"
+                                        Content="C" />
+                                    <StackPanel
+                                        Margin="8 0 0 0"
+                                        Grid.Column="1">
+                                        <TextBlock
+                                            Text="{Binding SignalName}" Foreground="{Binding LinearColor,UpdateSourceTrigger=PropertyChanged}"
+                                            FontWeight="Bold" />
+                                        <!--<TextBox Text="{Binding DValue}" upda-->
+                                        <TextBlock
+                                            Text="{Binding DValue,UpdateSourceTrigger=PropertyChanged,StringFormat=f2}" />
+                                    </StackPanel>
+                                    <!--<materialDesign:ColorPicker Grid.Column="2" Color="{Binding LinearColor}">
+                                    
+                                    </materialDesign:ColorPicker>-->
+                                    <!--<Button x:Name="btnSelectColor" Grid.Column="2" Background="{Binding LinearColor}">
+                                    </Button>-->
+                                    <!--materialDesign:ColorZoneAssist.Mode="Custom"-->
+                                </Grid>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding IsSelected}"
+                                    Value="True">
+                                    <Setter
+                                        TargetName="Border"
+                                        Property="Background"
+                                        Value="{DynamicResource MaterialDesignSelection}" />
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </GroupBox>
+        </Grid>
+        </ScrollViewer>
+        <oxyplot:PlotView Foreground="Black" Margin="5,0,0,0" Background="Transparent" Model="{Binding ChartModel}" Grid.Column="1"/>
+        <scope:EcgDrawingVisual Grid.Column="2" x:Name="ecgDrawingVisual"></scope:EcgDrawingVisual>
     </Grid>
 </UserControl>

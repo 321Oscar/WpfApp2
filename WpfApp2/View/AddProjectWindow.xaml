@@ -6,12 +6,69 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:WpfApp2.View"
         mc:Ignorable="d"
-        Title="AddProjectWindow" Height="494" Width="738">
-    <Grid >
-        <StackPanel Margin="61,0,20,0">
-            <TextBox materialDesign:HintAssist.Hint="Project Name" Style="{StaticResource MaterialDesignFloatingHintTextBox}" FontFamily="Champagne &amp; Limousines" FontSize="18"/>
+        Title="AddProjectWindow" Height="540" Width="350">
+    <Window.Resources>
+        <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignFloatingHintComboBox}">
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+        <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignFloatingHintTextBox}">
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Margin="20,0,20,0">
+            <TextBox 
+                materialDesign:HintAssist.Hint="Project Name" 
+                Style="{StaticResource MaterialDesignFloatingHintTextBox}" 
+                FontFamily="Champagne &amp; Limousines" FontSize="18"
+                Text="{Binding ProjectItem.Name,UpdateSourceTrigger=PropertyChanged}">
+            </TextBox>
+            <GroupBox Header="CanInfo" Style="{StaticResource MaterialDesignCardGroupBox}">
+                <StackPanel>
+                    <ComboBox x:Name="cbbCanDevice" materialDesign:HintAssist.Hint="Can Type"
+                              SelectedItem="{Binding DeviceType,UpdateSourceTrigger=PropertyChanged}"></ComboBox>
+                    <ComboBox x:Name="cbbCanIndex" materialDesign:HintAssist.Hint="Can Index"
+                              ItemsSource="{Binding CanIndexes}"
+                              SelectedItem="{Binding ProjectItem.DeviceIndex,UpdateSourceTrigger=PropertyChanged}">
+                    </ComboBox>
+                    <ComboBox x:Name="cbbCanChannel" materialDesign:HintAssist.Hint="Can Channel"
+                              SelectedItem="{Binding SelectedCanChannel,UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Channel Protocol Info" Style="{StaticResource MaterialDesignCardGroupBox}">
+                <StackPanel>
+                    <CheckBox Content="IsUsed" x:Name="cbUsed" Margin="5" IsChecked="{Binding SelectedChannelUsed,UpdateSourceTrigger=PropertyChanged}"></CheckBox>
+                    <ComboBox x:Name="cbbCanBaud" materialDesign:HintAssist.Hint="Can Baud" IsEnabled="{Binding ElementName=cbUsed,Path=IsChecked}"
+                                  SelectedItem="{Binding BaudRate,UpdateSourceTrigger=PropertyChanged}"/>
+                    <ComboBox x:Name="cbbCanProtoType" materialDesign:HintAssist.Hint="Protocol Type" IsEnabled="{Binding ElementName=cbUsed,Path=IsChecked}"
+                                  SelectedItem="{Binding ProtocolType,UpdateSourceTrigger=PropertyChanged}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox materialDesign:HintAssist.Hint="Protocol Files" IsReadOnly="true" Text="{Binding SelectedChannelFiles,UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                        <Button 
+                                    Grid.Column="1"
+                                    Content="Select" 
+                                    IsEnabled="{Binding ElementName=cbUsed,Path=IsChecked}"
+                                Click="Button_SelectFile_Click"></Button>
+                    </Grid>
+                    <Button Content="Save Channel Config" Margin="0,10,0,0" Click="Button_SaveChannelConfig_Click"></Button>
+                    <ListBox>
+                        <ListBoxItem Content="123"></ListBoxItem>
+                    </ListBox>
+                </StackPanel>
 
+            </GroupBox>
         </StackPanel>
-
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="20,0,0,0">
+            <Button Content="Ok" Margin="80 ,0,20,0" Click="Button_Ok_Click"></Button>
+            <Button Content="Cancel" Click="Button_Cancel_Click"></Button>
+        </StackPanel>
     </Grid>
 </Window>

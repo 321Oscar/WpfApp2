@@ -3,30 +3,192 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:WpfApp2.View"
         xmlns:model="clr-namespace:WpfApp2.Model"
-         xmlns:Utils="clr-namespace:WpfApp2"
+         xmlns:utils="clr-namespace:WpfApp2.Utils"
+        xmlns:prism="http://prismlibrary.com"
         xmlns:avalon="https://github.com/Dirkster99/AvalonDock"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="DockForm" Height="450" Width="800" WindowStyle="SingleBorderWindow" Closing="Window_Closing">
+        Title="DockForm" Height="800" Width="1000" WindowStyle="SingleBorderWindow" Closing="Window_Closing">
     <Window.Resources>
-        <Utils:EnumConverter x:Key="EnumConverter"/>
+        <utils:EnumConverter x:Key="EnumConverter"/>
     </Window.Resources>
     <Grid Background="#293955">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition></RowDefinition>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="20"></RowDefinition>
         </Grid.RowDefinitions>
-        <Menu Margin="0" HorizontalAlignment="Left" x:Name="menu1" VerticalAlignment="Top" Background="#293955" Foreground="White">
-            <MenuItem Header="Connect" Click="MenuItem_Click" >
-                <MenuItem Header="Connect Can" x:Name="btnConnectCan"></MenuItem>
-                <MenuItem Header="DisConnect" x:Name="disconnect"></MenuItem>
+        <Menu
+            materialDesign:MenuAssist.TopLevelMenuItemHeight="25" 
+            Foreground="{DynamicResource PrimaryHueMidForegroundBrush}"
+            Grid.Row="0">
+            <Menu.Resources>
+                <Style TargetType="MenuItem" x:Key="MenuItemStyle" BasedOn="{StaticResource MaterialDesignMenuItem}">
+                    <Style.Setters>
+                        <!--<Setter Property="Background" Value="{DynamicResource SecondaryHueMidBrush}"/>-->
+                        <Setter Property="Foreground" Value="Black"/>
+                    </Style.Setters>
+                </Style>
+            </Menu.Resources>
+            <MenuItem
+                Header="CAN">
+                
+                <!--<MenuItem Style="{StaticResource MenuItemStyle}"
+                    Header="Connect" x:Name="btnCanConnect" Click="btnCanConnect_Click" IsEnabled="{Binding CanIsOpen}">
+                </MenuItem>-->
+                <MenuItem Style="{StaticResource MenuItemStyle}"
+                    Header="Connect" Command="{Binding ConnectCanCommand}">
+                </MenuItem>
+                <MenuItem
+                    Header="DisConnect" x:Name="btnDisconnCan" Click="btnDisconnCan_Click" Style="{StaticResource MenuItemStyle}" IsEnabled="False"/>
+                <Separator />
+                <MenuItem
+                    Header="XCP Connect" Style="{StaticResource MenuItemStyle}" Visibility="Collapsed"/>
             </MenuItem>
-            <MenuItem Header="New Form" Click="MenuItem_Click_1"></MenuItem>
-            <MenuItem Header="保存布局" Click="MenuItem_Click_2"></MenuItem>
+            <MenuItem
+                 Header="Project">
+                <MenuItem
+                    Header="Save" Style="{StaticResource MenuItemStyle}" Icon="{materialDesign:PackIcon Kind=ContentSave}"/>
+                <MenuItem
+                     Header="Save as" Style="{StaticResource MenuItemStyle}"/>
+                <Separator />
+                <MenuItem
+                     Header="Add Form" Style="{StaticResource MenuItemStyle}" Click="MenuItem_AddForm_Click"/>
+            </MenuItem>
         </Menu>
-        <avalon:DockingManager x:Name="dockingManager" Margin="0,0,0,0" Grid.Row="1">
+        <ToolBarTray  Grid.Row="1" Visibility="Collapsed">
+            <ToolBar
+                Style="{StaticResource MaterialDesignToolBar}"
+                ClipToBounds="False">
+                <Button
+                    ToolTip="Follow me on Twitter"
+                    Content="{materialDesign:PackIcon Kind=Twitter}" />
+                <Button
+                    ToolTip="Save"
+                    Content="{materialDesign:PackIcon Kind=ContentSave}" />
+                <Separator />
+                <Button
+                  Command="Cut"
+                  ToolTip="Cut"
+                  ToolBar.OverflowMode="AsNeeded"
+                  Content="{materialDesign:PackIcon Kind=ContentCut}" />
+                <Button
+                  Command="Copy"
+                  ToolTip="Copy that stuff"
+                  ToolBar.OverflowMode="AsNeeded"
+                  Content="{materialDesign:PackIcon Kind=ContentCopy}" />
+                <Separator />
+                <Button
+                  Command="Paste"
+                  ToolTip="Paste some stuff"
+                  ToolBar.OverflowMode="AsNeeded"
+                  Content="{materialDesign:PackIcon Kind=ContentPaste}" />
+                <!-- when badging in a toolbar, make sure the parent ToolBar.ClipToBounds="False", and
+                   manually apply the button style -->
+                <materialDesign:Badged
+                  ToolBar.OverflowMode="AsNeeded"
+                  Badge="{materialDesign:PackIcon Alert}"
+                  CornerRadius="5">
+                    <Button
+                    ToolTip="Badge it up!"
+                    Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
+                    Content="{materialDesign:PackIcon Kind=AirplaneTakeoff}" />
+                </materialDesign:Badged>
+                <Separator />
+                <ListBox>
+                    <ListBoxItem
+        ToolTip="This is a lonley toggle with TextBlock instead of icon">
+                        <TextBlock
+          Text="W" />
+                    </ListBoxItem>
+                </ListBox>
+                <Separator />
+                <ListBox
+      SelectedIndex="0">
+                    <ListBox.ToolTip>
+                        <StackPanel>
+                            <TextBlock
+            Text="MaterialDesignToolToggleFlatListBox" />
+                            <TextBlock
+            Text="Exclusive selection" />
+                            <TextBlock
+            Text="ListBoxAssist.IsToggle allows more natural toggle behaviour" />
+                        </StackPanel>
+                    </ListBox.ToolTip>
+                    <ListBoxItem
+        Content="{materialDesign:PackIcon Kind=FormatAlignLeft}" />
+                    <ListBoxItem
+        Content="{materialDesign:PackIcon Kind=FormatAlignCenter}" />
+                    <ListBoxItem
+        Content="{materialDesign:PackIcon Kind=FormatAlignRight}" />
+                    <ListBoxItem
+        Content="{materialDesign:PackIcon Kind=FormatAlignJustify}" />
+                </ListBox>
+                <Separator />
+                <ListBox
+      SelectionMode="Extended">
+                    <ListBox.ToolTip>
+                        <StackPanel>
+                            <TextBlock
+            Text="MaterialDesignToolToggleListBox" />
+                            <TextBlock
+            Text="Multiple selection" />
+                            <TextBlock
+            Text="ListBoxAssist.IsToggle allows more natural toggle behaviour" />
+                        </StackPanel>
+                    </ListBox.ToolTip>
+                    <ListBoxItem
+        Content="{materialDesign:PackIcon Kind=FormatBold}" />
+                    <ListBoxItem
+        Content="{materialDesign:PackIcon Kind=FormatItalic}" />
+                    <ListBoxItem
+        Content="{materialDesign:PackIcon Kind=FormatUnderline}" />
+                </ListBox>
+                <Separator />
+                <Label
+      Content="Font size:"
+      VerticalAlignment="Center" />
+                <ComboBox>
+                    <ComboBoxItem
+        Content="10" />
+                    <ComboBoxItem
+        IsSelected="True"
+        Content="12" />
+                    <ComboBoxItem
+        Content="14" />
+                    <ComboBoxItem
+        Content="16" />
+                </ComboBox>
+                <CheckBox
+      Content="Check" />
+                <Button
+      ToolTip="Take a nap"
+      ToolBar.OverflowMode="Always"
+      Content="{materialDesign:PackIcon Kind=Hotel}" />
+                <RadioButton
+      GroupName="XXX"
+      Content="Radio" />
+                <RadioButton
+      GroupName="XXX"
+      Content="Ga Ga" />
+                <Separator />
+                <RadioButton
+      GroupName="YYY"
+      Style="{StaticResource MaterialDesignToolRadioButton}"
+      Content="{materialDesign:PackIcon Kind=Radio}" />
+                <RadioButton
+      GroupName="YYY"
+      Style="{StaticResource MaterialDesignToolRadioButton}"
+      Content="{materialDesign:PackIcon Kind=EmoticonPoop}" />
+                <Separator />
+                <ToggleButton />
+            </ToolBar>
+        </ToolBarTray>
+        <avalon:DockingManager x:Name="dockingManager" Margin="0,0,0,0" Grid.Row="2">
             <avalon:DockingManager.Theme>
                 <avalon:Vs2013BlueTheme/>
             </avalon:DockingManager.Theme>
@@ -34,8 +196,20 @@
                 <avalon:LayoutRoot.LeftSide>
                     <avalon:LayoutAnchorSide>
                         <avalon:LayoutAnchorGroup>
-                            <avalon:LayoutAnchorable Title="Project Forms" AutoHideHeight="150" ContentId="l1">
-                                <TreeView Name="tvForms" PreviewMouseDoubleClick="TreeViewItem_MouseDoubleClick">
+                            <avalon:LayoutAnchorable Title="Project Forms" AutoHideHeight="150" ContentId="l1" AutoHideWidth="200">
+                                <ListBox ItemsSource="{Binding Forms}" SelectionChanged="ListBox_SelectionChanged">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type model:FormItem}">
+                                            <TextBlock Text="{Binding Name}"/>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                    <!--<i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="SelectionChanged">
+                                            --><!--<InovkeCommandAction--><!--
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>-->
+                                </ListBox>
+                                <!--<TreeView Name="tvForms" PreviewMouseDoubleClick="TreeViewItem_MouseDoubleClick" ItemsSource="{Binding Forms}">
                                     <Style TargetType="TreeViewItem" >
                                         <Style.Setters>
                                             <EventSetter Event="MouseDoubleClick" Handler="TreeViewItem_MouseDoubleClick"></EventSetter>
@@ -44,11 +218,11 @@
                                     <TreeView.ItemTemplate>
                                         <HierarchicalDataTemplate  DataType="{x:Type model:ProjectItem}"  ItemsSource="{Binding Form}">
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock VerticalAlignment="Center" Text="{Binding Path=Name}"/>
+                                                <TextBlock VerticalAlignment="Center" Text="{Binding Name}"/>
                                             </StackPanel>
                                         </HierarchicalDataTemplate>
                                     </TreeView.ItemTemplate>
-                                </TreeView>
+                                </TreeView>-->
                             </avalon:LayoutAnchorable>
                         </avalon:LayoutAnchorGroup>
                     </avalon:LayoutAnchorSide>
@@ -56,8 +230,9 @@
                 <avalon:LayoutRoot.BottomSide>
                     <avalon:LayoutAnchorSide >
                         <avalon:LayoutAnchorGroup x:Name="bottomGroup">
-                            <avalon:LayoutAnchorable Title="输出" ContentId="t1">
-                                <ListBox x:Name="lbLog"></ListBox>
+                            <avalon:LayoutAnchorable Title="日志" ContentId="t1">
+                                <ListBox x:Name="lbLog" ItemsSource="{Binding Messages}">
+                                </ListBox>
                             </avalon:LayoutAnchorable>
                         </avalon:LayoutAnchorGroup>
                     </avalon:LayoutAnchorSide>
@@ -65,18 +240,15 @@
 
                 <avalon:LayoutPanel>
                     <avalon:LayoutDocumentPane x:Name="documentPanel">
-                        <avalon:LayoutDocument Title="mainwindows.xaml" ContentId="d1">
-                            <TextBox AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
-                        </avalon:LayoutDocument>
                     </avalon:LayoutDocumentPane>
                 </avalon:LayoutPanel>
             </avalon:LayoutRoot>
         </avalon:DockingManager>
-        <StatusBar VerticalAlignment="Bottom" Height="20" Grid.Row="2">
+        <StatusBar VerticalAlignment="Bottom" Height="20" Grid.Row="3">
             <StatusBarItem>
-                <TextBlock>Download File</TextBlock>
+                <TextBlock>Can Status:</TextBlock>
             </StatusBarItem>
-            <StatusBarItem>
+            <StatusBarItem Visibility="Collapsed">
                 <ProgressBar Width="100" Height="18" x:Name="progressBar1">
                     <ProgressBar.Triggers>
                         <EventTrigger RoutedEvent="ProgressBar.Loaded">
@@ -94,7 +266,7 @@
             </StatusBarItem>
             <Separator/>
             <StatusBarItem>
-                <TextBlock>Hah</TextBlock>
+                <TextBlock x:Name="tblog">Close</TextBlock>
             </StatusBarItem>
         </StatusBar>
     </Grid>

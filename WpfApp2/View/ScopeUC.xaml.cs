@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WpfApp2.Model;
 using WpfApp2.Utils;
 
 namespace WpfApp2.View
@@ -22,43 +23,57 @@ namespace WpfApp2.View
     /// </summary>
     public partial class ScopeUC : UserControl
     {
-        private readonly List<ChartData> data;
-        public ScopeUC()
+        private List<int> points = new List<int>() { 4,4,3,-1,-2,-2,-2,-2,-2,-2,-2,-4,-3,25,37,8,23,4,50,-6,54,20,50,4,2,5,2,54,45,24,45,24,5,25,45,2,4,-3,5,2,52,34,2,35,60,2,1,34};
+        private bool flag = true;
+        private int currentIndex = 0;
+
+        public ScopeUC(ProjectItem pItem,FormItem item)
         {
             InitializeComponent();
 
-            data = new()
-            {
-                new ChartData { Date = DateTime.Now.Date.AddDays(-15), Total = 121, PassRate = .84 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-14), Total = 88, PassRate = .92 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-13), Total = 180, PassRate = .35 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-12), Total = 150, PassRate = .46 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-11), Total = 78, PassRate = .58 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-10), Total = 99, PassRate = .71 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-9), Total = 143, PassRate = .81 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-8), Total = 56, PassRate = .85 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-7), Total = 108, PassRate = .95 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-6), Total = 79, PassRate = .78 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-5), Total = 63, PassRate = .65 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-4), Total = 157, PassRate = .58 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-3), Total = 148, PassRate = .36 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-2), Total = 115, PassRate = .48 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-1), Total = 89, PassRate = .63 },
-            };
+            DataContext = new ScopeViewModel(pItem, item);
 
-            DataContext = new ScopeViewModel(data);
-
-            _ = Task.Run(new Action(() =>
+            new Thread(() =>
             {
-                int count = 0;
-                while (count < 1000)
+                while (flag)
                 {
-                    data.Add(new ChartData() { Date = DateTime.Now.Date.AddDays(-1), Total = 89, PassRate = .63 });
-                    count++;
                     Thread.Sleep(10);
-                }
+                    _ = Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (currentIndex == points.Count)
+                        {
+                            currentIndex = 0;
+                        }
 
-            }));
+                        ecgDrawingVisual.SetupData(points[currentIndex]);
+                        currentIndex++;
+                    }));
+                }
+            }).Start();
         }
+
+        public ScopeUC()
+        {
+            InitializeComponent();
+        }
+
+        private void btnSelectColor_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private async void btnGetData_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = this.DataContext as ScopeViewModel;
+            await vm.StartOrStopGet();
+        }
+
+        private void btnChangeSignals_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = this.DataContext as ScopeViewModel;
+            vm.ModifiedSignals();
+        }
+
+        //override close
     }
 }

@@ -2,7 +2,7 @@
 
 namespace WpfApp2.Model
 {
-    public class ProjectItem 
+    public class ProjectItem
     {
         /// <summary>
         /// 

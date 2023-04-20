@@ -4,8 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:model="clr-namespace:WpfApp2.Model"
-        xmlns:Utils="clr-namespace:WpfApp2"
+        xmlns:utils="clr-namespace:WpfApp2.Utils"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:cancontrol="clr-namespace:CanControl.CANInfo;assembly=CanControl"
         mc:Ignorable="d"
         Title="Login" Height="450" Width="700"
         ResizeMode="NoResize"
@@ -14,7 +15,7 @@
         MouseLeftButtonDown="Window_MouseLeftButtonDown"
         FontFamily="Segoe UI Emoji">
     <Window.Resources>
-        <Utils:EnumConverter x:Key="EnumConverter"/>
+        <utils:EnumConverter x:Key="EnumConverter"/>
     </Window.Resources>
     <Grid Background="#252526">
         <!--<Rectangle Height="400" HorizontalAlignment="Left" Width="350" VerticalAlignment="Center">
@@ -33,6 +34,7 @@
                   Foreground="White"
                   FontSize="20"
                   IsTextSearchEnabled="True"
+                  ItemsSource="{Binding ProjectItems}"
                   SelectedItemChanged="tvProperties_SelectedItemChanged" Style="{DynamicResource MaterialDesignTreeView}">
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type model:ProjectItem}" ItemsSource="{Binding Form}">
@@ -45,7 +47,7 @@
                                 <TextBlock Text="{Binding DeviceType,
                                     StringFormat='Device Type: \{0\}',
                                     Converter={StaticResource EnumConverter},
-                                    ConverterParameter={x:Type Utils:DeviceType}}"/>
+                                    ConverterParameter={x:Type cancontrol:DeviceType}}"/>
                                 <Border BorderBrush="Silver" BorderThickness="0,1,0,0" Margin="0,8"/>
                             </StackPanel>
                         </StackPanel.ToolTip>
@@ -60,7 +62,7 @@
                                 <TextBlock Text="{Binding FormType,
                                     StringFormat='Device Type: \{0\}',
                                     Converter={StaticResource EnumConverter},
-                                    ConverterParameter={x:Type Utils:FormType}}"/>
+                                    ConverterParameter={x:Type utils:FormType}}"/>
                                 
 
                             </StackPanel>
@@ -109,7 +111,7 @@
         <TextBlock HorizontalAlignment="Left" Margin="23,10,0,0" 
                    FontSize="30" Foreground="White"
                    Text="Open Current Project" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Background="{x:Null}" BorderBrush="{x:Null}" Click="Button_Click">
+        <Button HorizontalAlignment="Right" VerticalAlignment="Top" Background="{x:Null}" BorderBrush="{x:Null}" Click="Button_CloseWd_Click">
             <materialDesign:PackIcon Kind="Close"/>
         </Button>
         <TextBlock Text="Version:" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="23,0,20,9" Foreground="Gray" Cursor="Hand"/>

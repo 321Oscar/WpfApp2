@@ -18,7 +18,7 @@ namespace ProtocolLib.Signal
             get { return messageID.ToString("X"); }
             set { messageID = int.Parse(value, System.Globalization.NumberStyles.HexNumber); }
         }
-
+        public int MsgIDInt => messageID;
 
         /// <summary>
         /// 起始位

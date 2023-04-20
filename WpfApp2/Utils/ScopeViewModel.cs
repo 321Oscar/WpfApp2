@@ -2,149 +2,353 @@
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
-using Prism.Mvvm;
+using ProtocolLib.Signal;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
+using WpfApp2.Model;
+using WpfApp2.View;
 
 namespace WpfApp2.Utils
 {
-    public class ScopeViewModel : BindableBase
+    public class ScopeViewModel : BaseDataModelView, IDataUCClosing
     {
-        public ScopeViewModel()
-        {
-            GetData().ContinueWith(x => ChartModel = CreateChartModel(x.Result));
-        }
-
-        public ScopeViewModel(List<ChartData> list)
-        {
-            _ = Task.Run(new Action(() =>
-            {
-                ChartModel = CreateChartModel(list);
-            }
-            ));
-        }
-
+        private ObservableCollection<ScopeSignal> _ScopeSignals;
+        public ObservableCollection<ScopeSignal> ScopeSignals { get => _ScopeSignals; private set=> SetProperty(ref _ScopeSignals, value); }
+        private List<DBCSignal> DbcSignal;
+        private bool _isGetData;
+        public bool IsGetdata { get => _isGetData; set => SetProperty(ref _isGetData, value); }
+        private CancellationTokenSource tokenSource;
+        /// <summary>
+        /// 生成测试数据随机数
+        /// </summary>
+        private readonly Random r = new Random();
+        private Dictionary<string, IList<DataPoint>> points;
+        private int maxPointCount = 2000;
+        public int MaxPointCount { get => maxPointCount; set => SetProperty(ref maxPointCount, value); }
+        private int interval = 10;
+        public int Interval { get => interval; set => SetProperty(ref interval, value); }
         private PlotModel _ChartModel;
         public PlotModel ChartModel
         {
             get => _ChartModel;
-            set
+            set => SetProperty(ref _ChartModel, value);
+        }
+        private bool disposedValue;
+
+        public ScopeViewModel(ProjectItem pItem,FormItem formItem)
+        {
+            FormItem = formItem;
+            ProjectItem = pItem;
+            InitChart();
+            DbcSignal = formItem.Singals.Signal;
+        }
+
+        #region -- Public --
+
+        /// <summary>
+        /// 启动获取数据
+        /// </summary>
+        public async Task StartOrStopGet()
+        {
+            if (IsGetdata)//停止
             {
-                SetProperty(ref _ChartModel, value);
+                IsGetdata = false;
+                // cancel the worker tasks
+                this.tokenSource.Cancel();
+                this.tokenSource = null;
+            }
+            else
+            {
+                IsGetdata = true;
+
+                ClearOxyData();
+                this.tokenSource = new CancellationTokenSource();
+
+                var context = SynchronizationContext.Current;
+                //采数据
+                // Start the point calculation worker task
+                Task<int> t = GetSignalData(tokenSource.Token);
+                Task<int> tP = Update(context, this.tokenSource.Token);
+                int x = await t;
+                //Task.Factory.StartNew(() => this.GetSignalData(this.tokenSource.Token), this.tokenSource.Token);
+                ////描点
+                //Task.Factory.StartNew(() => this.Update(context, this.tokenSource.Token), this.tokenSource.Token);
+
             }
         }
 
-        private Task<List<ChartData>> GetData()
+        public void ModifiedSignals()
         {
-            List<ChartData> data = new()
+            ModifiedFormItemForm modifiedFormItemForm = new(ProjectItem, FormItem, true);
+            if (modifiedFormItemForm.ShowDialog() == true)
             {
-                new ChartData { Date = DateTime.Now.Date.AddDays(-15), Total = 121, PassRate = .84 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-14), Total = 88, PassRate = .92 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-13), Total = 180, PassRate = .35 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-12), Total = 150, PassRate = .46 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-11), Total = 78, PassRate = .58 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-10), Total = 99, PassRate = .71 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-9), Total = 143, PassRate = .81 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-8), Total = 56, PassRate = .85 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-7), Total = 108, PassRate = .95 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-6), Total = 79, PassRate = .78 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-5), Total = 63, PassRate = .65 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-4), Total = 157, PassRate = .58 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-3), Total = 148, PassRate = .36 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-2), Total = 115, PassRate = .48 },
-                new ChartData { Date = DateTime.Now.Date.AddDays(-1), Total = 89, PassRate = .63 },
-            };
-
-            return Task.FromResult(data);
+                IsGetdata = false;
+                ChangeSignals();
+            }
         }
 
-        private PlotModel CreateChartModel(List<ChartData> list)
+        public override void ChangeSignals()
         {
-            var model = new PlotModel() { Title = "测试" };
+            LoadLines();
+        }
+        #endregion
 
-            //添加图说明
-            model.Legends.Add(new Legend
+        #region -- Priavte --
+
+        private void InitChart()
+        {
+            _ChartModel = new PlotModel()
             {
+                Title = "实时数据",
+                //IsLegendVisible = false
+                //Background = OxyColor.b
+            };
+
+            var l = new Legend
+            {
+                LegendPosition = LegendPosition.TopCenter,
                 LegendPlacement = LegendPlacement.Outside,
-                LegendPosition = LegendPosition.BottomCenter,
-                LegendOrientation = LegendOrientation.Horizontal,
-                LegendBorderThickness = 0,
-                LegendTextColor = OxyColor.FromRgb(244, 12, 12)
-            });
-
-            //定义第一个Y轴y1，显示数量
-            LinearAxis ay1 = new()
-            {
-                Key = "y1",
-                Position = AxisPosition.Left,
+                LegendBorder = OxyColors.Black,
+                LegendBorderThickness =1,
+                LegendItemAlignment = HorizontalAlignment.Center,
+                LegendOrientation = LegendOrientation.Horizontal
             };
+            _ChartModel.Legends.Add(l);
 
-            //定义第二个y轴 y2,显示百分比
-            LinearAxis ay2 = new() { Key = "y2", Position = AxisPosition.Right, Minimum = 0.1, MajorStep = .1, LabelFormatter = v => $"{v:P1}" };
-            //在第二Y轴坐标50%和80%显示网格线
-            ay2.ExtraGridlines = new double[2] { 0.5, 0 / 8 };
-            ay2.ExtraGridlineStyle = LineStyle.DashDashDot;
-
-            //定义X轴为日期，从15天前到现在
-            var minValue = DateTimeAxis.ToDouble(DateTime.Now.Date.AddDays(-15));
-            var maxvalue = DateTimeAxis.ToDouble(DateTime.Now.Date);
-            DateTimeAxis ax = new()
+            //x轴
+            _ChartModel.Axes.Add(new DateTimeAxis()
             {
-                Minimum = minValue,
-                Maximum = maxvalue,
-                StringFormat = "yyyy-MM-dd日",
-                MajorStep = 2,
                 Position = AxisPosition.Bottom,
-                Angle = 45,
-                IsZoomEnabled = false
-            };
-
-            //定义柱形图序列，指定数据轴为Y1
-            LinearBarSeries totalBarSeries = new();
-            totalBarSeries.YAxisKey = "y1";
-            totalBarSeries.BarWidth = 10;
-            totalBarSeries.Title = "总数";
-            //点击时弹出的Label内容
-            totalBarSeries.TrackerFormatString = "{0}\r\n{2:dd}日：{4:0}";
-            //设置数据绑定字段
-            totalBarSeries.ItemsSource = list;
-            totalBarSeries.DataFieldX = "Date";
-            totalBarSeries.DataFieldY = "Total";
-            //下面为手动添加数据方式
-            //totalBarSeries.Points.Add();
-
-            //定义三色折线图序列，指定数据轴为y2
-            ThreeColorLineSeries passedRateSeries = new();
-            passedRateSeries.Title = "通过率";
-            passedRateSeries.YAxisKey = "y2";
-            passedRateSeries.TrackerFormatString = "{0}\r\n{2:dd}日：{4:P1}";
-            //设置颜色阈值
-            passedRateSeries.LimitHi = .8;
-            passedRateSeries.LimitLo = .5;
-            //设置数据源和字段
-            passedRateSeries.ItemsSource = list;
-            passedRateSeries.DataFieldX = "Date";
-            passedRateSeries.DataFieldY = "PassRate";
-
-            model.Series.Add(totalBarSeries);
-            model.Series.Add(passedRateSeries);
-            model.Axes.Add(ay1);
-            model.Axes.Add(ay2);
-            model.Axes.Add(ax);
-
-            model.PlotAreaBorderThickness = new OxyThickness(1, 0, 1, 1);
-
-            return model;
+            });
+           
+            LoadLines();
         }
+
+        private void LoadLines()
+        {
+            _ChartModel.Series.Clear();
+            //删除Y轴
+            while (_ChartModel.Axes.Count > 1)
+            {
+                _ChartModel.Axes.RemoveAt(1);
+            }
+            ScopeSignals = new ObservableCollection<ScopeSignal>();
+            points = new Dictionary<string, IList<DataPoint>>();
+            for (int i = 0; i < FormItem.Singals.Signal.Count; i++)
+            {
+                DBCSignal signal = FormItem.Singals.Signal[i];
+
+                points.Add(signal.SignalName, new List<DataPoint>());
+
+                signal.IsSelected = true;
+                FormItem.Singals.Signal[i].DValue = 0d;
+                //删除重复的Y轴 并添加新的Y轴
+                var existAxes = _ChartModel.Axes.Where(x => x.Key == signal.SignalName).ToArray();
+                if (existAxes.Length > 0)
+                {
+                    _ChartModel.Axes.Remove(existAxes[0]);
+                }
+
+                _ChartModel.Axes.Add(new LinearAxis
+                {
+                    Position = i % 2 == 0 ? AxisPosition.Left : AxisPosition.Right,//i % 2 == 0 ? AxisPosition.Left : AxisPosition.Right,
+                    //StartPosition = i / (double)formItem.Singals.Signal.Count,
+                    //EndPosition = (i + 0.8) / (double)formItem.Singals.Signal.Count,
+                    PositionTier = i / 2,
+                    AxislineStyle = LineStyle.Solid,
+                    // TextColor = OxyColor.FromRgb(255, (byte)i, 255),
+                    MajorGridlineStyle = LineStyle.Solid,
+                    MinorGridlineStyle = LineStyle.Dot,//MaximumPadding
+                    Key = signal.SignalName,//$"Y{i}"
+                    Title = signal.SignalName,
+                });
+
+                //增加曲线
+                var series = new LineSeries()
+                {
+                    //Color = OxyColor.FromRgb(255, (byte)i, 255),
+                    StrokeThickness = 1,
+                    MarkerSize = 3,
+                    MarkerStroke = OxyColors.DarkGreen,
+                    MarkerType = MarkerType.None,
+                    Title = signal.SignalName,
+                    InterpolationAlgorithm = null,//InterpolationAlgorithms.CanonicalSpline，
+                    YAxisKey = signal.SignalName//$"Y{i}" //y轴的Key
+                };
+                var scopeSignal = new ScopeSignal()
+                {
+                    LinearColor = new SolidColorBrush(System.Windows.Media.Color.FromRgb(series.Color.R, series.Color.G, series.Color.B)),
+                    SignalName = signal.SignalName,
+                    IsSelected = true,
+                    DValue = 0,
+                };
+                scopeSignal.SelectedChange += ScopeSignal_SelectedChange;
+                ScopeSignals.Add(scopeSignal);
+
+                _ChartModel.Series.Add(series);
+
+            }
+            _ChartModel.InvalidatePlot(true);
+        }
+
+        private void ScopeSignal_SelectedChange(bool isSelected, string Name)
+        {
+            //throw new NotImplementedException();
+            var lineSer2 = _ChartModel.Series.Where(x => x.Title == Name).ToArray()[0] as LineSeries;
+            lineSer2.IsVisible = isSelected;
+
+            var axes = _ChartModel.Axes.Where(x => x.Title == Name).ToArray()[0] as LinearAxis;
+            axes.IsAxisVisible = isSelected;
+
+            _ChartModel.InvalidatePlot(true);
+
+            var signal = DbcSignal.Find(x => x.SignalName == Name);
+            signal.IsSelected = isSelected;
+        }
+
+        private async Task<int> GetSignalData(CancellationToken token)
+        {
+            await Task.Run(() =>
+            {
+                while (!token.IsCancellationRequested && IsGetdata)
+                {
+                    lock (this.points)
+                    {
+                        foreach (var item in DbcSignal)
+                        {
+                            if (item.IsSelected)
+                            {
+                                item.DValue = 100 * r.NextDouble();
+                                //显示数据
+
+
+                                DateTime dt = DateTime.Now;
+                                if (points[item.SignalName].Count > MaxPointCount)
+                                {
+                                    points[item.SignalName].Clear();
+                                }
+                                if (item.DValue > 75 || item.DValue < 25)
+                                {
+                                    points[item.SignalName].Add(new DataPoint(double.NaN, double.NaN));
+                                    item.DValue = double.NaN;
+                                }
+                                else
+                                {
+                                    points[item.SignalName].Add(new DataPoint(DateTimeAxis.ToDouble(dt), item.DValue));
+                                }
+
+                                ScopeSignals.First(x => x.SignalName == item.SignalName).DValue = item.DValue;
+                            }
+                        }
+                    }
+
+                    Thread.Sleep(Interval);
+                }
+            }, token);
+            return Interval;
+        }
+
+        private void ClearOxyData()
+        {
+            foreach (var item in points.Values)
+            {
+                item.Clear();
+            }
+        }
+        /// <summary>
+        /// 描点
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        private async Task<int> Update(SynchronizationContext context, CancellationToken token)
+        {
+            await Task.Run(() =>
+            {
+                while (!token.IsCancellationRequested && IsGetdata)
+                {
+                    context.Post(_ => this.UpdatePlot(), null);
+                    Thread.Sleep(250);
+                }
+            }, token);
+            // this loop runs on a worker thread
+            return 1;
+        }
+
+        private void UpdatePlot()
+        {
+            Debug.WriteLine("Updating on: " + Thread.CurrentThread.Name);
+            lock (this.points)
+            {
+                foreach (var item in DbcSignal)
+                {
+                    if (item.IsSelected)
+                    {
+                        //添加点
+                        var series = _ChartModel.Series.Where(x => x.Title == item.SignalName).ToArray()[0] as LineSeries;
+                        series.Points.Clear();
+                        series.Points.AddRange(this.points[item.SignalName]);
+
+                        //ScopeSignals.First(x => x.SignalName == item.SignalName).LinearColor = new SolidColorBrush(System.Windows.Media.Color.FromRgb(series.Color.R, series.Color.G, series.Color.B));
+                    }
+                }
+            }
+            
+            this.ChartModel.InvalidatePlot(true);
+        }
+
+        #endregion
+
+        #region -- IDataUCClosing --
+
+        public void Closing()
+        {
+            IsGetdata = false;
+            if (tokenSource != null)
+            {
+                this.tokenSource.Cancel();
+                this.tokenSource.Dispose();
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                    Closing();
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
+                // TODO: 将大型字段设置为 null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~ScopeViewModel()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 
-    public class ChartData
-    {
-        public DateTime Date { get; set; }
-        public double Total { get; set; }
-        public double PassRate { get; set; }
-    }
 }

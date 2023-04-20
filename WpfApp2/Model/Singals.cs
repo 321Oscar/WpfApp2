@@ -15,7 +15,6 @@ namespace WpfApp2.Model
             Signal = new List<DBCSignal>();
         }
 
-        public int protocoltype = 1;
     }
 
 }

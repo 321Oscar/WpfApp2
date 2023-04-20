@@ -46,7 +46,7 @@ namespace ProtocolLib.Protocols
             for (int i = 0; i < fileName.Length; i++)
             {
                 sigals = protocol.ProtocolFile(fileName[i]);
-                if (sigals.Count == 0)
+                if (sigals == null || sigals.Count == 0)
                     continue;
                 foreach (var item in sigals)
                 {
@@ -73,6 +73,7 @@ namespace ProtocolLib.Protocols
         /// <param name="singals"></param>
         /// <returns><see cref="Dictionary{SignalItem, string}"/>信号+值</returns>
         public abstract Dictionary<BaseSignal, string> Multip(CANRecieveFrame[] can_msg, List<BaseSignal> singals);
+        public abstract void Multip(CANRecieveFrame[] can_msg, IEnumerable<BaseSignal> singals);
 
         /// <summary>
         /// 解析报文，yeild return
@@ -95,15 +96,15 @@ namespace ProtocolLib.Protocols
         /// <param name="can_msg"></param>
         /// <param name="signalItem"></param>
         /// <returns>信号值</returns>
-        public abstract string Single(CANRecieveFrame[] can_msg, DBCSignal signalItem);
+        public abstract string Single(CANRecieveFrame[] can_msg, BaseSignal signalItem);
 
         /// <summary>
         /// 将信号值组帧
         /// </summary>
         /// <param name="signalValue"></param>
         /// <returns></returns>
-        public abstract CANSendFrame[] BuildFrames(Dictionary<DBCSignal, string> signalValue);
-        public abstract CANSendFrame BuildFrame(DBCSignal signal, string value);
+        public abstract CANSendFrame[] BuildFrames(Dictionary<BaseSignal, string> signalValue);
+        public abstract CANSendFrame BuildFrame(BaseSignal signal, string value);
 
     }
 }
